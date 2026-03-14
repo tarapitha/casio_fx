@@ -45,22 +45,22 @@ only programs.
 
 ## COMPILING
 
-The utility suite is written for Linux. For creating binaries, run '**make**' in the
+The utility suite is written for Linux. For creating binaries, run **'make'** in the
 project root directory. Binaries will be built into 'build' subdirectory.
-Run '**make clean**' to delete the files createf by building process.
+Run **'make clean'** to delete the files createf by building process.
 
 
 ## BINARIES
 
 Three binaries will be built:
 
-casio_rx -  utility to receive data from the calculator.
-            Running the utility will set the PC into state of waiting for the calculator to start the transmission.
+**casio_rx** -  utility to receive data from the calculator.
+Running the utility will set the PC into state of waiting for the calculator to start the transmission.
+
+**casio_tx** -  utility to transmit data to the calculator.
+Running the utility will start transmission to the calculator. Calculator has to be already in receiving state
             
-casio_tx -  utility to transmit data to the calculator.
-            Running the utility will start transmission to the calculator. Calculator has to be already in receiving state
-            
-cas2pbm  -  utility to convert CAS formatted screenshot from the caclulator into PBM P4 image.
+**cas2pbm**  -  utility to convert CAS formatted screenshot from the caclulator into PBM P4 image.
 
 
 All three utilities will output details about how to use them when run without the command line arguments or when
