@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Robert Tiismus
 
+/*
+* casio2pbm.c
+*
+* Code for utility for converting Casio calculator screenshot
+* in CAS format into PBM P4 image
+*/
+
 #include "cas2pbm.h"
 
 #include <stdio.h>
