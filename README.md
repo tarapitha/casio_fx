@@ -4,12 +4,12 @@ Suite of Linux command-line utilities for communication between the calculator a
 
 ## INTRODUCTION
 
-Some Casio calculators, including fx-7700GB, have serial interface 
-with 2.5mm plug for exchanging data with other calculators and PCs.
+Some Casio calculators, including fx-7700GB and fx-7700GE, have serial interface 
+with 2.5mm stereo audio plug for exchanging data with other calculators and PCs.
 
  - The communication line carries RS-232 TTL signal, the voltage is 5V for older models and 3.3V for newer models;
- - Data rate can be configured as 1200, 2400, 4800 and 9600 baud
- - Parity can be set to Even, Odd or None
+ - Data rate is 9600 baud by default, but can be set also to 1200, 2400 and 4800 baud. It is fixed to 9600 on newer models;
+ - Parity is by default set to Even, but can also be set to Odd or None. It is fixed to None on newer models;
 
 Casio provided optional cables for connecting two calculators, part numbers
 **SB-60** or **SB-62**, and also optional battery powered level-shifter kits
@@ -39,8 +39,8 @@ Hardware used for testing:
 The utilities were tested and will work with **fx-7700GB** and **fx-7700GE** models for
 communicating only programs. Only monochrome screendump was tested to work with **CFX-9850G**.
 To be clear, no other data communication functions are currently implemented, as I wrote
-the utility primarily for Casio fx-7700GB, this calculator is able to transmit and receive
-only programs.
+the utility primarily for Casio fx-7700GB. This model has functionality to transmit and receive
+programs only.
 
 
 ## COMPILING
