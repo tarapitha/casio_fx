@@ -67,3 +67,13 @@ All three utilities will output details about how to use them when run without t
 started with -h or --help command line option.
 
 
+## COMMUNICATION PROTOCOL
+
+The utility communicates with the device over a serial interface using a specific section-based protocol.
+Main stages:
+* Handshake and synchronization
+* Header data block transfer with checksum verification
+* Error handling
+* Optionally followed by more data blocks and error handling, depending on the type of the header
+
+More specific description: [PROTOCOL.md](./PROTOCOL.md)
