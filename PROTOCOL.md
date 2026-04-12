@@ -41,7 +41,7 @@ sequenceDiagram
             end
         end
 
-    else Data area already used<br/>(Handshake)
+    else Data area already used (Handshake)
         rect rgb(40, 40, 40)
         R-->>T: AREA_USED (0x21) Timeout 6min
         Note left of R: Receiver is waiting for a response
