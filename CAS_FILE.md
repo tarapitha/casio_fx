@@ -1,115 +1,140 @@
-Format of Casio CAS file.
+## Format of Casio CAS file.
 
-CAS file consists of one or more sections that starts with the ':' (0x3A) byte and
-ends with a checksum byte. Checksum is mod 256 cumulative,
+CAS files store data exactly in the same form as it is received from the calculator.
+It consists of one or more sections that start with the ':' (0x3A) byte and
+end with a checksum byte. Checksum is mod 256 cumulative,
 starting from the second byte to the penultimate one. The checksum byte
 is equal to mod 256 negative of the calculation. That way, adding the checksum
 byte to the calculated sum mod 256 is equal to 0x00.
 
 The first section is always the 40 byte header.
 
- Byte	Value or description
- 0	0x3A ':'
- 1,2	Magic string, identifying the type of the header
- 3 to [6 .. 26]	 depending on the Magic value, header data
- All the rest of the bytes, up to the 38 are usually filled with 0xFF
- 39	-Sum( bytes 1 to 38 ) % 256 (Modulo 256)
+| Byte           | Value or description                              |
+|----------------|---------------------------------------------------|
+|   0            |  ':' (0x3A)                                       |
+| 1, 2           |  Magic string, identifying the type of the header |
+| 3 to [6 .. 26] | depending on the Magic value, header data         |
+| until 38       | usually filled with 0xFF                          |
+| 39             | -Sum( bytes 1 to 38 ) % 256 (Modulo 256)          |
 
 
- Magic strings and header format
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Magic strings and header format
 
- +---+---+---+---+---+---+---+---+---+-------+---+
- | : | P | 1 | 00|MSB|LSB|MDE| 00| FF| ..... |SUM|
- +---+---+---+---+---+---+---+---+---+-------+---+
+| : | P | 1 |0x00|MSB|LSB|MODE|0x00|0xFF| ..... |CHKSUM|
+|---|---|---|----|---|---|----|----|----|-------|------|
 
- P1	One program
-	Supported by	fx-7700GB
-			fx-7700GE
-  bytes
-  3 - 0x00 
-  4 - MSB of the payload SIZE
-  5 - LSB of the payload SIZE
-  6 - MODE bits
-    0 - Unknown
-    1 - Statistics data
-    2 - Matrix mode
-    3 - Unknown
-    4 - Standard deviation
-    5 - Linear regression
-    6 - Base-N
-    7 - Draw Statistics Graph
-  7 - 0x00
+**P1** - One program
+
+|Supported by|
+|------------|
+| fx-7700GB  |
+| fx-7700GE  |
+
+| offset | value                   |
+|--------|-------------------------|
+|  3     | 0x00                    |
+|  4     | MSB of the payload SIZE |
+|  5     | LSB of the payload SIZE |
+|  6     | MODE bits               |
+|  7     | 0x00                    |
+
+| Mode bit | Meaning               |
+|----------|-----------------------|
+|    0     | Unknown               |
+|    1     | Statistics data       |
+|    2     | Matrix mode           |
+|    3     | Unknown               |
+|    4     | Standard deviation    |
+|    5     | Linear regression     |
+|    6     | Base-N                |
+|    7     | Draw Statistics Graph |
 
   Header is followed by variable size section containing the program.
   Program is terminated by one 0xFF byte, SIZE value includes the starting ':' and
   checksum byte.
 
- +---+---+---+---+---+---+---+---+---+-------+---+
- | : | P | Z | 00|MSB|LSB|MDE| 00| FF| ..... |SUM|
- +---+---+---+---+---+---+---+---+---+-------+---+
+| : | P | Z |0x00|MSB|LSB|MODE|0x00|0xFF| ..... |CHKSUM|
+|---|---|---|----|---|---|----|----|----|-------|------|
+ 
+**PZ** - All 38 programs
 
- PZ	All 38 programs
-	Supported by	fx-7700GB
-			fx-7700GE
-  bytes
-  3 - 0x00 
-  4 - MSB of the payload SIZE
-  5 - LSB of the payload SIZE
-  6 - MODE bits
-    0 - Unknown
-    1 - Statistics data
-    2 - Matrix mode
-    3 - Unknown
-    4 - Standard deviation
-    5 - Linear regression
-    6 - Base-N
-    7 - Draw Statistics Graph
-  7 - 0x00
+|Supported by|
+|------------|
+| fx-7700GB  |
+| fx-7700GE  |
+
+| offset | value                   |
+|--------|-------------------------|
+|  3     | 0x00                    |
+|  4     | MSB of the payload SIZE |
+|  5     | LSB of the payload SIZE |
+|  6     | MODE bits               |
+|  7     | 0x00                    |
+
+| Mode bit | Meaning               |
+|----------|-----------------------|
+|	0      | Unknown               |
+|   1      | Statistics data       |
+|   2      | Matrix mode           |
+|   3      | Unknown               |
+|   4      | Standard deviation    |
+|   5      | Linear regression     |
+|   6      | Base-N                |
+|   7      | Draw Statistics Graph |
 
   Header is followed by the 192-byte programs directory section that contains 38 5-byte fields,
   one field for each program, from A-Z, r and theta.
-    0 - 0x00
-    1 - MSB of the nth program size
-    2 - LSB of the nth program size
-    3 - MODE bits
-    4 - 0x00
+
+| offset | value                   |
+|--------|-------------------------|
+|  0     | 0x00                    |
+|  1     | MSB of the payload SIZE |
+|  2     | LSB of the payload SIZE |
+|  3     | MODE bits               |
+|  4     | 0x00                    |
 
   The last section is variable size and contains the actual programs data.
   All programs are terminated with one 0xFF byte, SIZE value includes the starting ':'
   and checksum byte.
 
- +---+---+---+---+---+---+---+---+---+-------+---+
- | : | F | 1 | 00|MSB|LSB|MDE| 00| FF| ..... |SUM|
- +---+---+---+---+---+---+---+---+---+-------+---+
+| : | F | 1 |0x00|MSB|LSB|MODE|0x00|0xFF| ..... |CHKSUM|
+|---|---|---|----|---|---|----|----|----|-------|------|
 
- F1	One function memory
-	Supported by	fx-7700GE
+ **F1** - One function memory
 
-  bytes
-  3 - 0x00 
-  4 - MSB of the payload SIZE
-  5 - LSB of the payload SIZE
-  6 - MODE bits
-  7 - 0x00
+|Supported by|
+|------------|
+| fx-7700GE  |
+
+| offset | value                   |
+|--------|-------------------------|
+|  3     | 0x00                    |
+|  4     | MSB of the payload SIZE |
+|  5     | LSB of the payload SIZE |
+|  6     | MODE bits               |
+|  7     | 0x00                    |
 
   Header is followed by variable size section with the content of the function memory.
   Content is terminated by one 0xFF byte, SIZE value includes the starting ':' and
   checksum byte.
 
- +---+---+---+---+---+---+---+---+---+---+---+---+-------+---+
- | : | F | 6 | 00|MSB|LSB|MDE| 00|MS1|LS1|MS2|LS2| ..... |SUM|
- +---+---+---+---+---+---+---+---+---+---+---+---+-------+---+
+| : | F | 6 |0x00|MSB|LSB|MODE|0x00|MS1|LS1|MS2|LS2| ..... |CHKSUM|
+|---|---|---|----|---|---|----|----|---|---|---|---|-------|------|
 
- F6	All 6 function memories
-	Supported by	fx-7700GE
+**F6** - All 6 function memories
 
-  bytes
-  3 - 0x00 
-  4 - MSB of the payload SIZE
-  5 - LSB of the payload SIZE
-  6 - MODE bits
-  7 - 0x00
+|Supported by|
+|------------|
+| fx-7700GE  |
+
+| offset | value                   |
+|--------|-------------------------|
+|  3     | 0x00                    |
+|  4     | MSB of the payload SIZE |
+|  5     | LSB of the payload SIZE |
+|  6     | MODE bits               |
+|  7     | 0x00                    |
+
   bytes 8..19 of the header contain 6 2-byte fields, indicating the size of each function.
   Every pair has MSB first and LSB second.
 
