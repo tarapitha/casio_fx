@@ -1,3 +1,5 @@
+![Casio Memory Map](ramdump.png)
+
 # casio_fx
 Suite of Linux command-line utilities for communication between the calculator and the PC via the calculator serial port.
 
