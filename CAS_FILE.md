@@ -367,7 +367,7 @@ The first section is always the 40 byte header.
 | 11..18 | Y factor |
 
 | : | G | 1 |0x00|MSB|LSB|MODE|0x00|SEL|TYP|0xFF| ..... |SUM|
-|---|---|---|----|---|---|----|----|---|--------|-------|---|
+|---|---|---|----|---|---|----|----|---|---|----|-------|---|
 
 **G1** - One graphics function
 
@@ -402,7 +402,7 @@ The first section is always the 40 byte header.
   checksum byte.
 
 | : | G | A |0x00|MSB|LSB|MODE|0x00|SEL|TYP|0xFF| ..... |SUM|
-|---|---|---|----|---|---|----|----|---|--------|-------|---|
+|---|---|---|----|---|---|----|----|---|---|----|-------|---|
 
 **GA** - Set of graphics functions
 
