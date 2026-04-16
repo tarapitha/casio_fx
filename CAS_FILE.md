@@ -285,7 +285,9 @@ The first section is always the 40 byte header.
 |---|---|---|---|---|---|---|----|----|-------|------|
 
 **AD** - All Data variables
+
 **AM** - Alpha Memory variables
+
 **DM** - Defined Memory variables
 
 |Supported by|
