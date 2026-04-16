@@ -568,13 +568,13 @@ CFX-9850G monochrome
 | fx-7700GE  |
 | CFX-9850G  |
 
-| offset | value
-|--------|-------
-| 3      | Image HEIGHT in pixels
-| 4      | image WIDTH in pixels
-| 5      | Unknown?
-| 6,7,8  | fx-7700GE "RWF"
-|        | CFX-9850G "DWF"
+| offset | value                  |
+|--------|------------------------|
+| 3      | Image HEIGHT in pixels |
+| 4      | image WIDTH in pixels  |
+| 5      | Unknown?               |
+| 6,7,8  | fx-7700GE: "RWF"       |
+|        | CFX-9850G: "DWF"       |
 
   Header is followed by HEIGHT*((WIDTH+7)/8)+2 byte section.
   Bytes leftmost pixel contains MSB and rightmost pixel LSB.
@@ -588,46 +588,47 @@ CFX-9850G monochrome
 
 ## Value memory number formats
 
- Decimal fractions are stored within 8 bytes using Binary Coded Decimal notation.
+ Decimal fractions are stored within 8 bytes using Binary Coded Decimal (BCD) notation.
 
-|    1    |   2   |   3   |   4   |   5   |    6    |    7    |  8  |
-|---------|-------|-------|-------|-------|---------|---------|-----|
-| M1/SIGN | M2/M3 | M4/M5 | M6/M7 | M8/M9 | M10/M11 | M12/M13 | EXP |
+|    1    |   2   |   3   |   4   |   5   |    6    |    7    |   8   |
+|---------|-------|-------|-------|-------|---------|---------|-------|
+| M1/SIGN | M2/M3 | M4/M5 | M6/M7 | M8/M9 | M10/M11 | M12/M13 | E1/E2 |
 
- Uninitialized value memory is sometimes stores as 0xFFFFFFFFFFFFFFFF
+M1...M13 - Mantissa BCD digits from 1 to 13
 
- Zero value is all zeros 0x0000000000000000
+SIGN - Compound value, indicating the sign of the mantissa and also of the exponent
 
- The MSB four most significant bits represents the mantissa first digit
+E1,E2 - Exponent digits if both values are BCD or fraction if E1 equals to 0xA
 
- The MSB four least significant bits represents the mantissa sign and
-
- The SIGN
+The SIGN:
 
 | Value | Mantissa | Exponent |
 |-------|----------|----------|
 | 0x0   |   > 0    |    < 0   |
+|       |  == 0    |   == 0   |
 | 0x1   |   > 0    |   >= 0   |
 | 0x5   |   < 0    |    < 0   |
 | 0x6   |   < 0    |   >= 0   |
 
- The negative exponent is calculated by adding the value to 0x9A, so if
- exponent = -1, then the value 0x9A - 0x01 = 0x99 is stored.
+Uninitialized value memory is sometimes stored as 0xFFFFFFFFFFFFFFFF
 
- Mantissa will have space for 13 significant digits and exponent for 2.
+Zero value is all zeros 0x0000000000000000
+
+The negative exponent is calculated by adding the value to BCD 100, so if
+exponent is -1, then the BCD value is 100 + (-1) = 99
 
 | Value          | Format                |
 |----------------|-----------------------|
 | 0.03           | 0x3 0 000000000000 98 |
 | 3.141592653590 | 0x3 1 141592653590 00 |
 
- Proper and mixed fractions are indicated with the value 0xAn in the exponent field.
+Proper and mixed fractions are indicated with the value 0xAn in the exponent field.
 
- The number 'n' indicates the length in bytes, used by the fraction, decremented by 2.
+The number 'n+2' indicates the length in 4-bit chunks used by the fraction.
 
- Fields are separated by 0xB.
+Fraction fields are separated by 0xB.
 
- MSB lower four bits are used for sign, as described previously.
+MSB lower four bits are used for sign, as described previously.
 
 | Value       | Format                    |
 |-------------|---------------------------|
@@ -636,4 +637,3 @@ CFX-9850G monochrome
 | -1/12345600 | 0x1 6 B 12345600 000 A9   |
 | 5 3/11      | 0x5 1 B 3 B 11 0000000 A5 |
 | 12345 1/20  | 0x1 1 2345 B 1 B 20 000A9 |
-
