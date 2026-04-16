@@ -497,37 +497,18 @@ The first section is always the 40 byte header.
 | 11..18 | next coefficient                  |
 | 19..26 | ...                               |
 
- fx-7700GE
-| : | D | D |HEIGHT|WIDTH|0x00| R | W | F |0xFF| ..... |CHKSUM|
-|---|---|---|------|-----|----|---|---|---|----|-------|------|
 
- CFX-9850G monochrome
-| : | D | D |HEIGHT|WIDTH|0x10| D | W | F |0xFF| ..... |CHKSUM|
-|---|---|---|------|-----|----|---|---|---|----|-------|------|
+| : |0x17|0x17|0x00|0xFF|0xFF| ... |CHKSUM|
+|---|----|----|----|----|----|-----|------|
 
-**DD** - Screendump
+**0x17,0x17** - ETB2. End of Transmission Block
 
 |Supported by|
 |------------|
 | fx-7700GE  |
-| CFX-9850G  |
 
-| offset | value
-|--------|-------
-| 3      | Image HEIGHT in pixels
-| 4      | image WIDTH in pixels
-| 5      | Unknown?
-| 6,7,8  | fx-7700GE "RWF"
-|        | CFX-9850G "DWF"
+This header terminates the **AL** data. It is the final section.
 
-  Header is followed by HEIGHT*((WIDTH+7)/8)+2 byte section.
-  Bytes leftmost pixel contains MSB and rightmost pixel LSB.
-
-  fx-7700GE bytes are ordered in rows from left to right,
-	    rows are ordered from top to bottom.
-
-  CFX-9850G bytes are ordered in columns from top to bottom,
-	    columns are ordered from right to left. 
 
 | : | A | L |0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|----|----|-------|------|
@@ -555,6 +536,7 @@ The first section is always the 40 byte header.
 | PD          | Polynomial equation                 |
 | ETB2        | End of Transmission Block header    |
 
+
 | : | B | U | T | Y | P | E | A | 0 | 1 |0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|---|---|---|----|-------|------|
 
@@ -569,6 +551,39 @@ The first section is always the 40 byte header.
   Header section is followed by 8130 byte section of the RAM dump.
 
   The fx-7700GE has total 8192 byte RAM.
+
+
+fx-7700GE
+| : | D | D |HEIGHT|WIDTH|0x00| R | W | F |0xFF| ..... |CHKSUM|
+|---|---|---|------|-----|----|---|---|---|----|-------|------|
+
+CFX-9850G monochrome
+| : | D | D |HEIGHT|WIDTH|0x10| D | W | F |0xFF| ..... |CHKSUM|
+|---|---|---|------|-----|----|---|---|---|----|-------|------|
+
+**DD** - Screendump
+
+|Supported by|
+|------------|
+| fx-7700GE  |
+| CFX-9850G  |
+
+| offset | value
+|--------|-------
+| 3      | Image HEIGHT in pixels
+| 4      | image WIDTH in pixels
+| 5      | Unknown?
+| 6,7,8  | fx-7700GE "RWF"
+|        | CFX-9850G "DWF"
+
+  Header is followed by HEIGHT*((WIDTH+7)/8)+2 byte section.
+  Bytes leftmost pixel contains MSB and rightmost pixel LSB.
+
+  fx-7700GE bytes are ordered in rows from left to right,
+	    rows are ordered from top to bottom.
+
+  CFX-9850G bytes are ordered in columns from top to bottom,
+	    columns are ordered from right to left. 
 
 
 ## Value memory number formats
@@ -601,9 +616,10 @@ The first section is always the 40 byte header.
 
  Mantissa will have space for 13 significant digits and exponent for 2.
 
-| Value | Format                 |
-|-------|------------------------|
-| 0.03  | 0x3 0 000000000000 98  |
+| Value          | Format                |
+|----------------|-----------------------|
+| 0.03           | 0x3 0 000000000000 98 |
+| 3.141592653590 | 0x3 1 141592653590 00 |
 
  Proper and mixed fractions are indicated with the value 0xAn in the exponent field.
 
