@@ -40,8 +40,8 @@ Hardware used for testing:
 
 The utilities were tested and will work with **fx-7700GB** and **fx-7700GE** models for
 communicating only programs. Only monochrome screendump was tested to work with **CFX-9850G**.
-To be clear, no other data communication functions are currently implemented, as I wrote
-the utility primarily for Casio fx-7700GB. This model has functionality to transmit and receive
+To be clear, no other data communication functions are currently implemented, as the utility is
+written primarily for Casio fx-7700GB. The latter has the functionality to transmit and receive
 programs only.
 
 
@@ -49,7 +49,7 @@ programs only.
 
 The utility suite is written for Linux. For creating binaries, run **'make'** in the
 project root directory. Binaries will be built into 'build' subdirectory.
-Run **'make clean'** to delete the files createf by building process.
+Run **'make clean'** to delete the files created during building.
 
 
 ## BINARIES
@@ -79,3 +79,5 @@ Main stages:
 * Optionally followed by more data blocks and error handling, depending on the type of the header
 
 More specific description: [PROTOCOL.md](./PROTOCOL.md)
+
+The description of the sections structure: [CAS_FILE.md](./CAS_FILE.md)
