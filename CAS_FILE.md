@@ -553,11 +553,11 @@ This header terminates the **AL** data. It is the final section.
   The fx-7700GE has total 8192 byte RAM.
 
 
-fx-7700GE
+fx-7700GE RWF
 | : | D | D |HEIGHT|WIDTH|0x00| R | W | F |0xFF| ..... |CHKSUM|
 |---|---|---|------|-----|----|---|---|---|----|-------|------|
 
-CFX-9850G monochrome
+CFX-9850G monochrome DWF
 | : | D | D |HEIGHT|WIDTH|0x10| D | W | F |0xFF| ..... |CHKSUM|
 |---|---|---|------|-----|----|---|---|---|----|-------|------|
 
@@ -568,21 +568,21 @@ CFX-9850G monochrome
 | fx-7700GE  |
 | CFX-9850G  |
 
-| offset | value                  |
-|--------|------------------------|
-| 3      | Image HEIGHT in pixels |
-| 4      | image WIDTH in pixels  |
-| 5      | Unknown?               |
-| 6,7,8  | fx-7700GE: "RWF"       |
-|        | CFX-9850G: "DWF"       |
+| offset | value                   |
+|--------|-------------------------|
+| 3      | Image HEIGHT in pixels  |
+| 4      | image WIDTH in pixels   |
+| 5      | Bitplane index?         |
+| 6,7,8  | "RWF" Row-Width-Format  |
+|        | "DWF" Down-Width-Format |
 
   Header is followed by HEIGHT*((WIDTH+7)/8)+2 byte section.
   Bytes leftmost pixel contains MSB and rightmost pixel LSB.
 
-  fx-7700GE bytes are ordered in rows from left to right,
+  RWF bytes are ordered in rows from left to right,
 	    rows are ordered from top to bottom.
 
-  CFX-9850G bytes are ordered in columns from top to bottom,
+  DWF bytes are ordered in columns from top to bottom,
 	    columns are ordered from right to left. 
 
 
