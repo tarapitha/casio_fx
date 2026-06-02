@@ -598,7 +598,7 @@ M1...M13 - Mantissa BCD digits from 1 to 13
 
 SIGN - Compound value, indicating the sign of the mantissa and also of the exponent
 
-E1,E2 - Exponent digits if both values are BCD or fraction if E1 equals to 0xA
+E1,E2 - Exponent digits if both values are BCD. Fraction if E1 equals to 0xA
 
 The SIGN:
 
