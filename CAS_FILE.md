@@ -20,6 +20,8 @@ The first section is always the 40 byte header.
 
 ## Magic strings and header format
 
+---
+
 | : | P | 1 |0x00|MSB|LSB|MODE|0x00|0xFF| ..... |CHKSUM|
 |---|---|---|----|---|---|----|----|----|-------|------|
 
@@ -52,6 +54,8 @@ The first section is always the 40 byte header.
   Header is followed by variable size section containing the program.
   Program is terminated by one 0xFF byte, SIZE value includes the starting ':' and
   checksum byte.
+
+---
 
 | : | P | Z |0x00|MSB|LSB|MODE|0x00|0xFF| ..... |CHKSUM|
 |---|---|---|----|---|---|----|----|----|-------|------|
@@ -97,6 +101,8 @@ The first section is always the 40 byte header.
   All programs are terminated with one 0xFF byte, SIZE value includes the starting ':'
   and checksum byte.
 
+---
+
 | : | F | 1 |0x00|MSB|LSB|MODE|0x00|0xFF| ..... |CHKSUM|
 |---|---|---|----|---|---|----|----|----|-------|------|
 
@@ -117,6 +123,8 @@ The first section is always the 40 byte header.
   Header is followed by variable size section with the content of the function memory.
   Content is terminated by one 0xFF byte, SIZE value includes the starting ':' and
   checksum byte.
+
+---
 
 | : | F | 6 |0x00|MSB|LSB|MODE|0x00|MS1|LS1|MS2|LS2| ..... |CHKSUM|
 |---|---|---|----|---|---|----|----|---|---|---|---|-------|------|
@@ -141,6 +149,8 @@ The first section is always the 40 byte header.
   Header is followed by variable size section that contains the actual function memory data.
   All functions are terminated with one 0xFF byte, SIZE value includes the starting ':'
   and checksum byte of the section.
+
+---
 
 | : | M | 1 | R | 8 |COL|ROW|0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|----|----|-------|------|
@@ -174,6 +184,8 @@ The first section is always the 40 byte header.
 |--------|------------------|
 |  1     | 0x17	            |
 |  2..12 | filled with 0xFF |
+
+---
 
 | : | M | A | R | 8 |COL|ROW|0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|----|----|-------|------|
@@ -210,6 +222,8 @@ The first section is always the 40 byte header.
 |  1     | 0x17	            |
 |  2..12 | filled with 0xFF |
 
+---
+
 | : | S | S | R | 8 |MSR|LSR|0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|----|----|-------|------|
 
@@ -241,6 +255,8 @@ The first section is always the 40 byte header.
 |--------|------------------|
 |  1     | 0x17	            |
 |  2..18 | filled with 0xFF |
+
+---
 
 | : | S | R | R | 8 |MSR|LSR|0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|----|----|-------|------|
@@ -274,6 +290,8 @@ The first section is always the 40 byte header.
 |--------|------------------|
 |  1     | 0x17	            |
 |  2..26 | filled with 0xFF |
+
+---
 
 | : | A | D | R | 8 |MSB|LSB|0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|----|----|-------|------|
@@ -315,6 +333,8 @@ The first section is always the 40 byte header.
 |  1     | 0x17	            |
 |  2..10 | filled with 0xFF |
 
+---
+
 | : | G | R | R | 8 |MSV|LSV|0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|----|----|-------|------|
 
@@ -346,6 +366,8 @@ The first section is always the 40 byte header.
 | 59..66 | T/Theta max   |
 | 67..74 | T/Theta pitch |
 
+---
+
 | : | G | F | R | 8 |MSV|LSV|0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|----|----|-------|------|
 
@@ -369,6 +391,8 @@ The first section is always the 40 byte header.
 |  2     | 0x00     |
 |  3..10 | X factor |
 | 11..18 | Y factor |
+
+---
 
 | : | G | 1 |0x00|MSB|LSB|MODE|0x00|SEL|TYP|0xFF| ..... |SUM|
 |---|---|---|----|---|---|----|----|---|---|----|-------|---|
@@ -405,6 +429,8 @@ The first section is always the 40 byte header.
   Function is terminated by one 0xFF byte, SIZE value includes the starting ':' and
   checksum byte.
 
+---
+
 | : | G | A |0x00|MSB|LSB|MODE|0x00|SEL|TYP|0xFF| ..... |SUM|
 |---|---|---|----|---|---|----|----|---|---|----|-------|---|
 
@@ -436,6 +462,8 @@ The first section is always the 40 byte header.
 |--------|------------------|
 |  1     | 0x17	            |
 |  2..38 | filled with 0xFF |
+
+---
 
 | : | S | D | R | 8 |COL|ROW|0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|----|----|-------|------|
@@ -470,6 +498,8 @@ The first section is always the 40 byte header.
 |  1     | 0x17	            |
 |  2..12 | filled with 0xFF |
 
+---
+
 | : | P | D | R | 8 |MSD|LSD|0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|----|----|-------|------|
 
@@ -497,6 +527,7 @@ The first section is always the 40 byte header.
 | 11..18 | next coefficient                  |
 | 19..26 | ...                               |
 
+---
 
 | : |0x17|0x17|0x00|0xFF|0xFF| ... |CHKSUM|
 |---|----|----|----|----|----|-----|------|
@@ -509,6 +540,7 @@ The first section is always the 40 byte header.
 
 This header terminates the **AL** data. It is the final section.
 
+---
 
 | : | A | L |0xFF|0xFF| ..... |CHKSUM|
 |---|---|---|----|----|-------|------|
@@ -536,6 +568,7 @@ This header terminates the **AL** data. It is the final section.
 | PD          | Polynomial equation                 |
 | ETB2        | End of Transmission Block header    |
 
+---
 
 | : | B | U | T | Y | P | E | A | 0 | 1 |0xFF| ..... |CHKSUM|
 |---|---|---|---|---|---|---|---|---|---|----|-------|------|
@@ -552,6 +585,7 @@ This header terminates the **AL** data. It is the final section.
 
   The fx-7700GE has total 8192 byte RAM.
 
+---
 
 fx-7700GE RWF
 | : | D | D |HEIGHT|WIDTH|0x00| R | W | F |0xFF| ..... |CHKSUM|
@@ -585,6 +619,7 @@ CFX-9850G monochrome DWF
   DWF bytes are ordered in columns from top to bottom,
 	    columns are ordered from right to left. 
 
+---
 
 ## Value memory number formats
 
@@ -617,6 +652,8 @@ Zero value is all zeros 0x0000000000000000
 The negative exponent is calculated by adding the value to BCD 100, so if
 exponent is -1, then the BCD value is 100 + (-1) = 99
 
+Examples:
+
 | Value          | Format                |
 |----------------|-----------------------|
 | 0.03           | 0x3 0 000000000000 98 |
@@ -630,10 +667,12 @@ Fraction fields are separated by 0xB.
 
 MSB lower four bits are used for sign, as described previously.
 
-| Value       | Format                    |
-|-------------|---------------------------|
-| 1/2         | 0x1 1 B 2 0000000000 A2   |
-| -2/9        | 0x2 6 B 9 0000000000 A2   |
-| -1/12345600 | 0x1 6 B 12345600 000 A9   |
-| 5 3/11      | 0x5 1 B 3 B 11 0000000 A5 |
-| 12345 1/20  | 0x1 1 2345 B 1 B 20 000A9 |
+Examples:
+
+| Value       | Format                     | Length calculation (0xAn)|
+|-------------|----------------------------|--------------------------|
+| 1/2         | 0x1 1 B 2    0000000000 A2 | len("11B2")-2        = 2 |
+| -2/9        | 0x2 6 B 9    0000000000 A2 | len("26B9")-2        = 2 |
+| -1/12345600 | 0x1 6 B 12345600    000 A9 | len("16B12345600")-2 = 9 |
+| 5 3/11      | 0x5 1 B 3 B 11  0000000 A5 | len("51B3B11")-2     = 5 |
+| 12345 1/20  | 0x1 1 2345 B 1 B 20 000 A9 | len("112345B1B20")-2 = 9 |
