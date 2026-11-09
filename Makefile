@@ -20,7 +20,7 @@ VERSION_STR  := $(shell cat $(VERSION_FILE))
 
 CFLAGS	+= -DCASIO_FX_VERSION=\"$(VERSION_STR)\"
 
-casio_tx_SRCS := casio_tx_fsm.c casio_tx_transport.c
+casio_tx_SRCS := casio_tx_fsm.c casio_tx_parse.c casio_tx_transport.c
 casio_rx_SRCS := casio_rx_fsm.c casio_rx_transport.c
 cas2pbm_SRCS  := cas2pbm.c
 prg2cas_SRCS  := prg2cas.c

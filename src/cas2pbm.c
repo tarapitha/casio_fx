@@ -1,13 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Robert Tiismus
 
-/*
-* casio2pbm.c
-*
-* Code for utility for converting Casio calculator screenshot
-* in CAS format into PBM P4 image
-*/
-
 #include "cas2pbm.h"
 
 #include <stdio.h>
@@ -79,17 +72,37 @@ int main( int argc, char **argv )
     return 1;
   }
 
+  if( ! strcmp( fname[ 0 ], fname[ 1 ] ) )
+  {
+    fprintf( stderr, "%s: the source and destination file are same\n", argv[ 0 ] );
+    show_help( argv[ 0 ] );
+    return 1;
+  }
+
   if( read_infile( fname[ 0 ], &casio ) < 0 )
     return -1;
 
-  // Reorder the bytes from CAS format to PBM format
-  int dst = ( casio.width + 7 ) / 8 - 1;
-  for( int src = 1; src < casio.size - 1; src++ )
+  int dst;
+  switch( casio.mode )
   {
-    casio.pbm_data[ dst ] = casio.data[ src ];
-    dst += ( casio.width + 7 ) / 8;
-    if( dst > casio.size - 2 )
-      dst -= casio.size - 1;
+    case 0x1044: // CFX-9850G screendump
+      // Reorder the bytes from CAS format to PBM format
+      dst = ( casio.width + 7 ) / 8 - 1;
+      for( int src = 1; src < casio.size - 1; src++ )
+      {
+        casio.pbm_data[ dst ] = casio.data[ src ];
+        dst += ( casio.width + 7 ) / 8;
+        if( dst > casio.size - 2 )
+          dst -= casio.size - 1;
+      }
+      break;
+
+    case 0x0052: // fx-7700 screendump
+      memcpy( casio.pbm_data, casio.data + 1, casio.size  - 2 );
+      break;
+
+    default:
+      return -1;
   }
 
   if( casio.large )
@@ -215,6 +228,8 @@ static int read_infile( char *fname, Casio_FX *c )
 
 static int parse_header( Casio_FX *c )
 {
+  uint8_t mode_lsb, mode_msb;
+
   for( int i = 0; i < 2; i++ )
     c->magic[ i ] = (char) c->hdr[ i+1 ];
   if( c->magic[0] != 'D' )
@@ -224,6 +239,11 @@ static int parse_header( Casio_FX *c )
   c->height = c->hdr[ 2+1 ];
   c->width  = c->hdr[ 3+1 ];
   c->size = (uint16_t)( c->height * ( ( c->width + 7 ) / 8 ) + 2 );
+
+  // Get the screendump mode
+  mode_msb = c->hdr[ 4+1 ];
+  mode_lsb = c->hdr[ 5+1 ];
+  c->mode = ( mode_msb << 8 ) | mode_lsb;
 
   if( c->magic[ 1 ] != 'D' || c->size <= 2 )
       return -1;

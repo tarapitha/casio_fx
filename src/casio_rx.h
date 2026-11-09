@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Robert Tiismus
 
 /*
-* casio_sx.h
+* casio_rx.h
 *
 * Header file for Casio Graphing calculator
 * program link receiver protocol utility.
@@ -12,7 +12,6 @@
 #define kB (1024)
 
 #include <stdint.h>
-#include <string.h>
 #include <time.h>
 #include <stdbool.h>
 #include <termios.h>
@@ -20,43 +19,89 @@
 enum signals
 {
   ACK		= 0x06, // Reply: Acknowledged / Yes!
-  DC3		= 0x13, // Reply: I'm ready to receive!
-  NAK		= 0x15,	// Reply: No!
+  DC3		= 0x13, // Reply: Ready to receive!
+  NAK		= 0x15,	// Reply: Not Acknowledged / No!
   SYN		= 0x16,	// Request: Are you ready to receive?
   AREA_USED	= 0x21,	// ! Reply: The area already contains data
-  GENERIC_ERROR	= 0x22,	// "
-  MEM_FULL	= 0x24,	// $ Reply: No space to store this transmission
-  CHKSUM_ERROR	= 0x2B,	// + Reply: The sent data packet has incorrect control sum
-  MGC_PRG_ONE	= 0x31,	// 1
-  INIT_SEND	= 0x3A,	// : Marker: Data packet will follow immediately
-  MODE_ERROR	= 0x3F,	// ? Reply: Header mode byte has unrecognized value
-  MAGIC_PRG	= 0x50,	// P
-  MGC_PRG_ALL	= 0x5A,	// Z
-  END_MARKER	= 0xFF  // Marker: Every program contains this as the last byte
+  GENERIC_ERROR	= 0x22,	// " Reply: Unspecified error condition
+  MEM_FULL	= 0x24,	// $ Reply: Not enough memory to store this transmission
+  CHKSUM_ERROR	= 0x2B,	// + Reply: The sent data section has incorrect control sum
+  INIT_SEND	= 0x3A,	// : Marker: data payload follows
+  MODE_ERROR	= 0x3F	// ? Reply: Header mode byte has unrecognized value
 };
 
+// Magic values for different CAS object formats
+#define MAGIC_VALUES \
+  X(AD)	/* All variables memory 	 */ \
+  X(AL)	/* All data			 */ \
+  X(AM)	/* Alpha variables memory   	 */ \
+  X(BU)	/* Backup			 */ \
+  X(DD)	/* Screendump			 */ \
+  X(DM)	/* Defined variables memory 	 */ \
+  X(F1)	/* One function memory		 */ \
+  X(F6)	/* All function memories	 */ \
+  X(G1)	/* One graph function		 */ \
+  X(GA)	/* All graph functions		 */ \
+  X(GF)	/* Graphic zoom factor		 */ \
+  X(GR)	/* Graphics range		 */ \
+  X(M1)	/* One Matrix			 */ \
+  X(MA)	/* All Matrices			 */ \
+  X(P1)	/* One program			 */ \
+  X(PD)	/* Polynomial equation		 */ \
+  X(PZ)	/* All programs			 */ \
+  X(SD)	/* Linear multivariable equation */ \
+  X(SR)	/* Regression			 */ \
+  X(SS)	/* Single-variable statistics	 */ \
+  X(ETB1) /* End of Transmission Block - "0x17,0xFF" */ \
+  X(ETB2) /* End of Transmission Block - "0x17,0x17" */
+
+// Enum of the Magic values
 typedef enum
 {
-  P1,		// One program
-  PZ,		// All programs
-  DD,		// Screendump
-  UNKNOWN	// Unknown
+  #define X(name) name,
+  MAGIC_VALUES
+  #undef X
+  MAGIC_COUNT,	// Number of magic values defined, do not change order!
+  UNKNOWN	// Placeholder for Undefined value
 } Magic_t;
 
-typedef enum { NONE, EVEN, ODD } Parity_t;
-
+// FSM states
 typedef enum
 {
   ST_WAIT_SYN,
   ST_WAIT_HDR,
   ST_READ_HDR,
   ST_WAIT_OVRWRT_DECISION,
+  ST_WAIT_BACKUP_DATA,
+  ST_READ_BACKUP_DATA,
+  ST_WAIT_VARIABLES_DATA,
+  ST_READ_VARIABLES_DATA,
+  ST_WAIT_FACTOR_DATA,
+  ST_READ_FACTOR_DATA,
+  ST_WAIT_RANGE_DATA,
+  ST_READ_RANGE_DATA,
+  ST_WAIT_GRAPHFUNC_DATA,
+  ST_READ_GRAPHFUNC_DATA,
+  ST_WAIT_ALLGRAPHFUNC_DATA,
+  ST_READ_ALLGRAPHFUNC_DATA,
+  ST_WAIT_FUNCMEM_DATA,
+  ST_READ_FUNCMEM_DATA,
+  ST_WAIT_ALLFUNCMEM_DATA,
+  ST_READ_ALLFUNCMEM_DATA,
+  ST_WAIT_MATRIX_DATA,
+  ST_READ_MATRIX_DATA,
+  ST_WAIT_ALLMATRIX_DATA,
+  ST_READ_ALLMATRIX_DATA,
   ST_WAIT_PRG_DATA,
   ST_READ_PRG_DATA,
   ST_WAIT_ALLPRG_DIRECTORY,
   ST_READ_ALLPRG_DIRECTORY,
   ST_WAIT_ALLPRG_DATA,
   ST_READ_ALLPRG_DATA,
+  ST_WAIT_REGRESSION_DATA,
+  ST_READ_REGRESSION_DATA,
+  ST_WAIT_STAT_DATA,
+  ST_READ_STAT_DATA,
   ST_WAIT_SCRNDMP,
   ST_READ_SCRNDMP,
   ST_DONE
@@ -75,11 +120,7 @@ typedef struct
   speed_t speed;
 } Rate_tr;
 
-typedef struct
-{
-  char		*str;
-  Magic_t	magic;
-} Magic_tr;
+typedef enum { NONE, EVEN, ODD, PARITY_UNSPECIFIED } Parity_t;
 
 typedef struct
 {
@@ -89,28 +130,46 @@ typedef struct
   size_t	len;
 } Action;
 
+enum bufsize
+{
+  BUF_N		= 64*kB,	// 2^16 = 64kB, it is max possible ".size" value
+  HDR_SIZE	= 1+38+1,	// fx-7700 standard header size
+  BU_SIZE	= 8130,		// Almost all of the 8kB RAM
+  PZ_DIR_SIZE	= 1+38*5+1,	// ':', 38xSizeMode[5], Checksum
+  SD_ROW_SIZE	= 1+2+2*8+1,	// ':', 0x00, 0x00, Number[8], Number[8], Checksum
+  REGRESSION_ROW_SIZE	= 28,	// ':', 0x00, 0x00, Number[8], Number[8], Number[8], Checksum
+  MATRIX_CELL_SIZE	= 14,	// ':', 0x00, 0x00, Col, Row, Number[8], Checksum
+  VARIABLES_SIZE	= 1+2+8+1  // ':', 0x00, 0x00, Number[8], Checksum
+};
+
 typedef struct
 {
   State		st;
-  uint8_t	hdr[ 38 + 2 ]; // ':' + header + ctrlsum
-  uint8_t	hdr_sum;
-  size_t	hdr_i;
+  uint8_t	buf[ BUF_N ];
+  uint8_t	* const data_end;
 
-  uint8_t	directory[ 38 * 5 + 2 ]; // ':' + 38 program headers + ctrlsum
-  uint8_t	directory_sum;
-  size_t	directory_i;
-
-  uint8_t	data[ 64 * kB ]; // 2^16 = 64kB, max possible ".size" value
+  uint8_t	*data;	// Section pointer
   uint16_t	size;
   uint8_t	data_sum;
   size_t	data_i;
 
   uint8_t	mode;
-
   Magic_t	magic;
 
   uint8_t	height;
   uint8_t	width;
+  uint8_t	matrix_n;
+  uint8_t	matrix_i;
+  uint16_t	sd_n;
+  uint16_t	sd_i;
+  uint16_t	regression_n;
+  uint16_t	regression_i;
+  uint16_t	variables_n;
+  uint16_t	variables_i;
+  uint8_t	polynomial_degree;
+
+  bool		all_data;
+  bool		save_stream;
 
   time_t	last_rx_s;
   time_t	limit_s;
@@ -119,5 +178,8 @@ typedef struct
   Parity_t	parity;
   speed_t	bps;
 
+  uint8_t	overwrite;	// ACK or NAK
+  bool		unchecked;
   bool		dst_file_exists;
+  bool		do_overwrite;
 } Casio_FX;

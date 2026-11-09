@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Robert Tiismus
 
 /*
-* casio_sx_transport.c
+* casio_rx_transport.c
 *
 * Transport logic framework implementation for Casio Graphing calculator
 * program link receiver protocol.
@@ -42,13 +42,14 @@ static void show_help( char * );
 *******************************************/
 int main( int argc, char **argv )
 {
-  Casio_FX casio;
-  memset( &casio, 0, sizeof( casio ) );
+  Casio_FX casio = { .data_end = casio.buf + BUF_N };
 
   // Parse command line options
   casio.dst_file_exists = false;
-  casio.parity      = NONE;	// No parity by default
-  casio.bps	    = B9600;	// Default data rate 9600 bps
+  casio.unchecked	= false;
+  casio.overwrite	= NAK;
+  casio.parity  	= NONE;	// No parity by default
+  casio.bps		= B9600; // Default data rate 9600 bps
 
   char *commdev = "/dev/ttyUSB0";
   char *fname   = NULL;
@@ -59,12 +60,18 @@ int main( int argc, char **argv )
 	{ "4800", B4800 },
 	{ "9600", B9600 } };
 
+  const char *parities[] = {
+	[ NONE ] = "none",
+	[ EVEN ] = "even",
+	[ ODD ]  = "odd"
+  };
+
   struct option longopts[] = {
     { "help",	 no_argument,       0, 'h' },
     { "device",	 required_argument, 0, 'd' },
-    { "even",	 no_argument,	    0, 'e' },
-    { "odd",	 no_argument,	    0, 'o' },
     { "bps",	 required_argument, 0, 'b' },
+    { "parity",	 required_argument, 0, 'p' },
+    { "force",	 no_argument,       0, 'f' },
     { "version", no_argument,	    0, 'V' },
     { 0, 0, 0, 0 }
   };
@@ -72,18 +79,12 @@ int main( int argc, char **argv )
   int opt;
   while( optind < argc )
   {
-    if( ( opt = getopt_long( argc, argv, "+hd:eob:V", longopts, NULL ) ) != -1 )
+    if( ( opt = getopt_long( argc, argv, "+hd:b:p:ufV", longopts, NULL ) ) != -1 )
     {
       switch( opt )
       {
 	 case 'd':
 	   commdev = optarg;
-	   break;
-	 case 'e':
-	   casio.parity = EVEN;
-	   break;
-	 case 'o':
-	   casio.parity = ODD;
 	   break;
 	 case 'b':
 	   casio.bps = B0;
@@ -102,6 +103,29 @@ int main( int argc, char **argv )
 	     exit( 1 );
 	   }
 	   break;
+	 case 'p':
+	   casio.parity = PARITY_UNSPECIFIED;
+	   for( int parity = 0; parity < 3; parity++ )
+	   {
+	     if( parities[ parity ] && ! strcasecmp( optarg, parities[ parity ] ) )
+	     {
+	       casio.parity = (Parity_t) parity;
+	       break;
+	     }
+	   }
+	   if( casio.parity == PARITY_UNSPECIFIED )
+	   {
+	     fprintf( stderr, "%s: invalid parity: %s\n", argv[ 0 ], optarg );
+	     show_help( argv[ 0 ] );
+	     exit( 1 );
+	   }
+	   break;
+	 case 'u':
+	   casio.unchecked = true;
+	   break;
+	 case 'f':
+	   casio.overwrite = ACK;
+	   break;
 	 case 'V':
 	   fprintf( stderr, "%s version: %s\n", argv[ 0 ], CASIO_FX_VERSION );
 	   exit( 0 );
@@ -114,9 +138,7 @@ int main( int argc, char **argv )
       }
     }
     else
-    {
       fname = argv[ optind++ ];
-    }
   }
 
   if( fname == NULL )
@@ -141,7 +163,7 @@ int main( int argc, char **argv )
   casio.last_rx_s = get_systime_s();
   casio.limit_s = LONGWAIT;
 
-  fputs( "\nReceiving a file from calculator\n", stderr );
+  fputs( "\nReceiving a file from a calculator\n", stderr );
 
   /***********************
   *   FSM Loop
@@ -153,7 +175,7 @@ int main( int argc, char **argv )
     FD_SET(fd, &rfds);
     struct timeval tv = { .tv_sec = 1, .tv_usec = 0 };
 
-    int r = select(fd + 1, &rfds, NULL, NULL, &tv);
+    int r = select( fd + 1, &rfds, NULL, NULL, &tv );
     if( r < 0 ) { perror( "select" ); exit( 1 ); }
   
     if( timeout_expired( &casio ) )
@@ -193,30 +215,7 @@ static int write_outfile( char *fname, Casio_FX *c )
   FILE *outfile;
 
   if( ( outfile = fopen( fname, "wb" ) ) == NULL ) { perror( fname ); return -1; }
-
-  switch( c->magic )
-  {
-    case P1: // One program
-      fwrite( c->hdr, 1, sizeof( c->hdr ), outfile );
-      fwrite( c->data, 1, c->size, outfile );
-      break;
-
-    case PZ: // All programs
-      fwrite( c->hdr, 1, sizeof( c->hdr ), outfile );
-      fwrite( c->directory, 1, sizeof( c->directory ), outfile );
-      fwrite( c->data, 1, c->size, outfile );
-      break;
-
-    case DD: // Screendump
-          fwrite( c->hdr, 1, sizeof( c->hdr ), outfile );
-          fwrite( c->data, 1, c->size, outfile );
-          break;
-    default: // This should never happen, incoming data is sanitized
-      fclose( outfile );
-      fputs( "\n** ERROR: Malformatted header!\n", stderr );
-      return -1;
-  }
-
+  fwrite( c->buf, 1, c->data - c->buf, outfile );
   fclose( outfile );
 
   return 0;
@@ -282,6 +281,12 @@ static int do_action( int fd, Action *a )
       n = write( fd, a->bytes, 1 );
       if( n != 1 ) { perror( "Write" ); return -1; }
       fputs( a->string, stderr );
+      tcdrain( fd );
+
+/* Sellest ei ole kasu, kalku ei tee väljagi
+      tcsendbreak( fd, 0 );
+      tcflush( fd, TCIFLUSH );
+*/
       return -1;
     case ACT_NONE:
     default:
@@ -310,9 +315,10 @@ static void show_help( char *name )
 	"Filename is a required argument.\n"
 	"\t-h, --help\tShow this help text and terminate\n"
 	"\t-d, --device\tProvide serial device name, defaults to /dev/ttyUSB0\n"
-	"\t-e, --even\tSerial port protocol parity 'even'\n"
-	"\t-o, --odd\tSerial port protocol parity 'odd'\n"
 	"\t-b, --bps\tProvide bps rate, 1200, 2400, 4800 or 9600 (default)\n"
+	"\t-p, --parity\tProvide parity, even, odd or none (default)\n"
+	"\t-u,\t\tUnchecked. Ignore checksum\n"
+	"\t-f, --force\tOverwrite unconditionally\n"
 	"\t-V, --version\tPrint version and exit\n",
 	name );
 }

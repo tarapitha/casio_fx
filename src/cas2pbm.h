@@ -29,6 +29,8 @@ typedef struct
 
   char		magic[ 2 ];	// "DD"
 
+  uint16_t	mode;	// 0052 : fx-7700  Proceed in left-right and up-down order start at NW corner
+			// 1044 : CFX-9850 Proceed in up-down and right-left order start at NE corner
   uint8_t	height;
   uint8_t	width;
 
