@@ -25,7 +25,7 @@ This suite of utilities was written to enable the communication between the Linu
 and the calculator. It should work with any suitable serial device that has compatible
 voltage levels. However, testing has been done only using the FTDI TTL-232R-5V-AJ cable
 with the fitted 3.5mm to 2.5mm plug adapter.
-The converter has to have tip and ring connection crossed.
+The adapter has to have tip and ring connection crossed.
 
 Hardware used for testing:
 
