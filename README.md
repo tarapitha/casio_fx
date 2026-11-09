@@ -24,7 +24,7 @@ for connecting the calculator to PC via native serial interface, part numbers
 This suite of utilities was written to enable the communication between the Linux PC
 and the calculator. It should work with any suitable serial device that has compatible
 voltage levels. However, testing has been done only using the FTDI TTL-232R-5V-AJ cable
-with the fitted 3.5mm to 2.5mm plug converter.
+with the fitted 3.5mm to 2.5mm plug adapter.
 The converter has to have tip and ring connection crossed.
 
 Hardware used for testing:
