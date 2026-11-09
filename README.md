@@ -36,13 +36,13 @@ Hardware used for testing:
 | Sleeve     | Sleeve              |
 
 
-## FEATURES
+## SUPPORTED DEVICES
 
-The utilities were tested and will work with **fx-7700GB** and **fx-7700GE** models for
-communicating only programs. Only monochrome screendump was tested to work with **CFX-9850G**.
-To be clear, no other data communication functions are currently implemented, as the utility is
-written primarily for Casio fx-7700GB. The latter has the functionality to transmit and receive
-programs only.
+**fx-7700GB**, **fx-7700GE** are fully supported
+
+**fx-8700GB** supported communication of only primary memory programs
+
+**CFX-9850G** supported is only receiving the monochrome screendumps from the calculator
 
 
 ## COMPILING
