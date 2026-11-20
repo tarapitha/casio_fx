@@ -1,4 +1,4 @@
-## Format of Casio CAS file.
+## Format of the Casio CAS file.
 
 CAS files store data exactly in the same form as it is received from the calculator.
 It consists of one or more sections that start with the ':' (0x3A) byte and
@@ -31,6 +31,7 @@ The first section is always the 40 byte header.
 |------------|
 | fx-7700GB  |
 | fx-7700GE  |
+| fx-8700GB  |
 
 | offset | value                   |
 |--------|-------------------------|
@@ -66,6 +67,7 @@ The first section is always the 40 byte header.
 |------------|
 | fx-7700GB  |
 | fx-7700GE  |
+| fx-8700GB  |
 
 | offset | value                   |
 |--------|-------------------------|
@@ -100,6 +102,41 @@ The first section is always the 40 byte header.
   The last section is variable size and contains the actual programs data.
   All programs are terminated with one 0xFF byte, SIZE value includes the starting ':'
   and checksum byte.
+
+---
+
+| : | E | N |0x00|MSB|LSB|MODE|0x00|NAM1| ... |NM12|0xFF| ..... |CHKSUM|
+|---|---|---|----|---|---|----|----|----|-----|----|----|-------|------|
+
+**EN** - One editor file
+
+|Supported by|
+|------------|
+| fx-8700GB  |
+
+| offset | value                   |
+|--------|-------------------------|
+|  3     | 0x00                    |
+|  4     | MSB of the payload SIZE |
+|  5     | LSB of the payload SIZE |
+|  6     | MODE bits               |
+|  7     | 0x00                    |
+|  8-19  | Editor file name        |
+
+| Mode bit | Meaning               |
+|----------|-----------------------|
+|    0     | Unknown               |
+|    1     | Statistics data       |
+|    2     | Matrix mode           |
+|    3     | Unknown               |
+|    4     | Standard deviation    |
+|    5     | Linear regression     |
+|    6     | Base-N                |
+|    7     | Draw Statistics Graph |
+
+  Header is followed by variable size section containing the editor file data.
+  Data is terminated by one 0xFF byte, SIZE value includes the starting ':' and
+  checksum byte.
 
 ---
 
