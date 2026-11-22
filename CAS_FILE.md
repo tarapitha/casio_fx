@@ -27,9 +27,9 @@ The first section is always the 40 byte header.
 
 **P1** - One program
 
-**Known to be supported on:**
-|fx-7700GB|fx-7700GE|fx-8700GB|fx-8800GB|
-|---------|---------|---------|---------|
+|Known to be supported on                  |
+|------------------------------------------|
+|fx-7700GB, fx-7700GE, fx-8700GB, fx-8800GB|
 
 | offset | value                   |
 |--------|-------------------------|
@@ -61,9 +61,9 @@ The first section is always the 40 byte header.
  
 **PZ** - All 38 programs
 
-**Known to be supported by:**
-|fx-7700GB|fx-7700GE|fx-8700GB|fx-8800GB|
-|---------|---------|---------|---------|
+|Known to be supported on                  |
+|------------------------------------------|
+|fx-7700GB, fx-7700GE, fx-8700GB, fx-8800GB|
 
 | offset | value                   |
 |--------|-------------------------|
@@ -106,9 +106,9 @@ The first section is always the 40 byte header.
 
 **EN** - Editor file
 
-**Known to be supported on:**
-|fx-8700GB|fx-8800GB|
-|---------|---------|
+|Known to be supported on|
+|------------------------|
+|fx-8700GB, fx-8800GB    |
 
 | offset | value                   |
 |--------|-------------------------|
@@ -143,9 +143,9 @@ The first section is always the 40 byte header.
 
 **FN** - All editor files
 
-**Known to be supported on:**
-|fx-8700GB|fx-8800GB|
-|---------|---------|
+|Known to be supported on|
+|------------------------|
+|fx-8700GB, fx-8800GB    |
 
 | offset | value                   |
 |--------|-------------------------|
