@@ -27,11 +27,9 @@ The first section is always the 40 byte header.
 
 **P1** - One program
 
-|Supported by|
-|------------|
-| fx-7700GB  |
-| fx-7700GE  |
-| fx-8700GB  |
+**Known to be supported on:**
+|fx-7700GB|fx-7700GE|fx-8700GB|fx-8800GB|
+|---------|---------|---------|---------|
 
 | offset | value                   |
 |--------|-------------------------|
@@ -63,11 +61,9 @@ The first section is always the 40 byte header.
  
 **PZ** - All 38 programs
 
-|Supported by|
-|------------|
-| fx-7700GB  |
-| fx-7700GE  |
-| fx-8700GB  |
+**Known to be supported by:**
+|fx-7700GB|fx-7700GE|fx-8700GB|fx-8800GB|
+|---------|---------|---------|---------|
 
 | offset | value                   |
 |--------|-------------------------|
@@ -105,14 +101,14 @@ The first section is always the 40 byte header.
 
 ---
 
-| : | E | N |0x00|MSB|LSB|MODE|0x00|NAM1| ... |NM12|0xFF| ..... |CHKSUM|
-|---|---|---|----|---|---|----|----|----|-----|----|----|-------|------|
+| : | E | N |0x00|MSB|LSB|MODE|0x00|NAM1| ... |NAM12|0xFF| ..... |CHKSUM|
+|---|---|---|----|---|---|----|----|----|-----|-----|----|-------|------|
 
-**EN** - One editor file
+**EN** - Editor file
 
-|Supported by|
-|------------|
-| fx-8700GB  |
+**Known to be supported on:**
+|fx-8700GB|fx-8800GB|
+|---------|---------|
 
 | offset | value                   |
 |--------|-------------------------|
@@ -122,6 +118,7 @@ The first section is always the 40 byte header.
 |  6     | MODE bits               |
 |  7     | 0x00                    |
 |  8-19  | Editor file name        |
+|        | padded with 0xFF bytes  |
 
 | Mode bit | Meaning               |
 |----------|-----------------------|
@@ -135,8 +132,50 @@ The first section is always the 40 byte header.
 |    7     | Draw Statistics Graph |
 
   Header is followed by variable size section containing the editor file data.
+  File name is end-padded with 0xFF bytes.
   Data is terminated by one 0xFF byte, SIZE value includes the starting ':' and
   checksum byte.
+
+---
+
+| : | F | N |0x00|MSB|LSB|MODE|0x00|NAM1| ... |NAM12|0xFF| ..... |CHKSUM|
+|---|---|---|----|---|---|----|----|----|-----|-----|----|-------|------|
+
+**FN** - All editor files
+
+**Known to be supported on:**
+|fx-8700GB|fx-8800GB|
+|---------|---------|
+
+| offset | value                   |
+|--------|-------------------------|
+|  3     | 0x00                    |
+|  4     | MSB of the payload SIZE |
+|  5     | LSB of the payload SIZE |
+|  6     | MODE bits               |
+|  7     | 0x00                    |
+|  8-19  | Editor file name        |
+|        | padded with 0xFF bytes  |
+
+| Mode bit | Meaning               |
+|----------|-----------------------|
+|    0     | Unknown               |
+|    1     | Statistics data       |
+|    2     | Matrix mode           |
+|    3     | Unknown               |
+|    4     | Standard deviation    |
+|    5     | Linear regression     |
+|    6     | Base-N                |
+|    7     | Draw Statistics Graph |
+
+  Header is followed by variable size section containing the editor file data.
+  File name is end-padded with 0xFF bytes.
+  Data is terminated by one 0xFF byte, SIZE value includes the starting ':' and
+  checksum byte.
+
+  This section is followed by zero or more **FN** sections. The sequence is terminated with ETB1 block.
+
+  FN1,[FN2],...,ETB1
 
 ---
 
