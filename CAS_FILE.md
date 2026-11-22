@@ -177,6 +177,8 @@ The first section is always the 40 byte header.
 
   FN1,[FN2],...,ETB1
 
+  **NB!** The calculator contains minor bug. It does not acknowledge (ACK) the receiving of the terminating ETB1 block of the All files (FN).
+
 ---
 
 | : | F | 1 |0x00|MSB|LSB|MODE|0x00|0xFF| ..... |CHKSUM|
