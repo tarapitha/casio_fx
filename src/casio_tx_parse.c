@@ -36,7 +36,7 @@ Parse_action casio_fx_parse_frame( Casio_FX *c )
     case ST_DECIDE_TYPE:
       switch( c->magic )
       {
-	case AL:
+	case AL:	// All data
 	  c->st = ST_HDR;
 	  return parse_none();
 
@@ -44,6 +44,8 @@ Parse_action casio_fx_parse_frame( Casio_FX *c )
 	case F1:	// One Function memory
 	case G1:	// One graphics function
 	case P1:	// One program
+	case EN:	// Editor file
+	case FN:	// All editor files
 	  c->st = ST_READ_SECTION;
 	  return parse_none();
 
@@ -108,7 +110,7 @@ Parse_action casio_fx_parse_frame( Casio_FX *c )
       }
 
     case ST_READ_SECTION:
-      c->st = ST_DONE;
+      c->st = c->all_files ? ST_HDR : ST_DONE;
       return parse_read_section( c->size );
 
     case ST_READ_SECTION_SET:

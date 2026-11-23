@@ -38,8 +38,10 @@ enum signals
   X(BU)	/* Backup			 */ \
   X(DD)	/* Screendump			 */ \
   X(DM)	/* Defined variables memory 	 */ \
+  X(EN) /* One File			 */ \
   X(F1)	/* One function memory		 */ \
   X(F6)	/* All function memories	 */ \
+  X(FN) /* All Files			 */ \
   X(G1)	/* One graph function		 */ \
   X(GA)	/* All graph functions		 */ \
   X(GF)	/* Graphic zoom factor		 */ \
@@ -98,6 +100,10 @@ typedef enum
   ST_READ_ALLPRG_DIRECTORY,
   ST_WAIT_ALLPRG_DATA,
   ST_READ_ALLPRG_DATA,
+  ST_WAIT_FLE_DATA,
+  ST_READ_FLE_DATA,
+  ST_WAIT_ALLFLE_DATA,
+  ST_READ_ALLFLE_DATA,
   ST_WAIT_REGRESSION_DATA,
   ST_READ_REGRESSION_DATA,
   ST_WAIT_STAT_DATA,
@@ -146,9 +152,9 @@ typedef struct
 {
   State		st;
   uint8_t	buf[ BUF_N ];
-  uint8_t	* const data_end;
+  uint8_t *	const buf_end;
 
-  uint8_t	*data;	// Section pointer
+  uint8_t *	data;	// Section pointer
   uint16_t	size;
   uint8_t	data_sum;
   size_t	data_i;
@@ -167,8 +173,10 @@ typedef struct
   uint16_t	variables_n;
   uint16_t	variables_i;
   uint8_t	polynomial_degree;
+  uint8_t	file_name[ 13 ];
 
   bool		all_data;
+  bool		all_files;
   bool		save_stream;
 
   time_t	last_rx_s;
@@ -178,7 +186,7 @@ typedef struct
   Parity_t	parity;
   speed_t	bps;
 
-  uint8_t	overwrite;	// ACK or NAK
+  bool		force_overwrite;
   bool		unchecked;
   bool		dst_file_exists;
   bool		do_overwrite;

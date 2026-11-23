@@ -48,7 +48,7 @@ static void show_help( char * );
 *******************************************/
 int main( int argc, char **argv )
 {
-  Casio_FX casio = { .data_end = casio.buf + BUF_N };
+  Casio_FX casio = { .buf_end = casio.buf + BUF_N };
 
   casio.interactive = false;
   casio.unchecked   = false;
@@ -213,7 +213,6 @@ int main( int argc, char **argv )
       for( int i = 0; i < n; i++ )
       {
         Action a = casio_fx_on_byte( &casio, buf[ i ] );
-
 	if( a.kind == ACT_NEED_DECISION )
 	{
 	  decide_overwrite( &casio, LONGWAIT );
@@ -225,7 +224,7 @@ int main( int argc, char **argv )
 	    case NAK:
 	      fputs( "\nNot overwriting the calculator memory area.\n"
 		     "\nIf overwriting is desirable, "
-		     "consider using command line options '-y' or '-i'.\n", stderr );
+		     "consider using command line options '-f' or '-i'.\n", stderr );
 	      break;
 	  }
 	  Action a2 = casio_fx_apply_decision( &casio );
@@ -237,8 +236,16 @@ int main( int argc, char **argv )
 	  casio.st = a2.next_state;
 	}
 	else if( a.kind != ACT_NONE )
-	  if( do_action( fd, &casio, &a ) < 0 )
+	{
+	  int action_result = do_action( fd, &casio, &a );
+	  // Casio fx-8700GB does not acknowledge for All files the ETB1 block
+	  // This is a hack ============================
+	  if( casio.magic == ETB1 && casio.all_files )
+	    return 0;
+	  //============================================
+	  if( action_result < 0 )
 	    exit( -1 );
+	}
       }
     }
   }
@@ -253,7 +260,7 @@ static int parse_do_action( FILE *infile, Casio_FX *c, Parse_action *a )
   switch( a->kind )
   {
     case ACT_READ_HEADER:
-      if( c->data + a->size >= c->data_end )
+      if( c->data + a->size >= c->buf_end )
 	return -4;
       n = fread( c->data, 1 , a->size, infile );
       if( n != a->size || c->data[ 0 ] != ':' )
@@ -271,7 +278,7 @@ static int parse_do_action( FILE *infile, Casio_FX *c, Parse_action *a )
       return 0;
 
     case ACT_READ_SECTION:
-      if( c->data + a->size >= c->data_end )
+      if( c->data + a->size >= c->buf_end )
 	return -4;
       n = fread( c->data, 1 , a->size, infile );
       if( n != a->size || c->data[ 0 ] != ':' )
@@ -341,6 +348,7 @@ static int read_infile( char *fname, Casio_FX *c )
   }
 
   fclose( infile );
+  c->data_end = c->data;
   c->data = c->buf;
   return 0;
 }
@@ -430,7 +438,7 @@ static int do_action( int fd, Casio_FX *c, Action *a )
 
     case ACT_SEND_BUF:
       // Check that we read inside the limits of the buffer
-      if( c->data + a->len >= c->data_end )
+      if( c->data + a->len >= c->buf_end )
       {
 	fputs( "\n** Internal error: an impossible event ocurred,\n"
 	       "trying to read from outside of the memory buffer.\n"
@@ -576,6 +584,29 @@ int parse_header( Casio_FX *c )
       size_lsb = c->data[ 4+1 ];
       c->size = (uint16_t)( ( size_msb << 8 ) | size_lsb );
       c->mode = c->data[ 5+1 ];
+      break;
+
+    case EN:	// Editor file
+      size_msb = c->data[ 3+1 ];
+      size_lsb = c->data[ 4+1 ];
+      c->size = (uint16_t)( ( size_msb << 8 ) | size_lsb );
+      c->mode = c->data[ 5+1 ];
+      strncpy( (char *)(c->file_name ), (char *)( c->data + 6+1 ), 12 );
+      for( int i = 0; i < 13; i++ )
+	if( c->file_name[ i ] == 0xFF )
+	  c->file_name[ i ] = 0x00;
+      break;
+
+    case FN:	// All files
+      size_msb = c->data[ 3+1 ];
+      size_lsb = c->data[ 4+1 ];
+      c->size = (uint16_t)( ( size_msb << 8 ) | size_lsb );
+      c->mode = c->data[ 5+1 ];
+      strncpy( (char *)(c->file_name ), (char *)( c->data + 6+1 ), 12 );
+      for( int i = 0; i < 13; i++ )
+	if( c->file_name[ i ] == 0xFF )
+	  c->file_name[ i ] = 0x00;
+      c->all_files = true;
       break;
 
     case SR:

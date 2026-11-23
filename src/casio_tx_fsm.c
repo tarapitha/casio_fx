@@ -76,6 +76,8 @@ Action casio_fx_on_byte( Casio_FX *c, uint8_t b )
 	    case F1:	// One function memory
 	    case G1:	// One graphics function
 	    case P1:	// One program
+	    case EN:	// Editor file
+	    case FN:	// All files
 	      c->st = ST_WAIT_SECTION_DATA_RESPONSE;
 	      return send_buf( c->size );
 
@@ -232,8 +234,14 @@ Action casio_fx_on_byte( Casio_FX *c, uint8_t b )
       switch( b )
       {
 	case ACK:
-	  c->st = ST_DONE;
 	  c->limit_s = SHORTWAIT;
+	  if( c->all_files )
+	  {
+	    c->st = ST_WAIT_HDR_RESPONSE;
+	    parse_header( c );	// Headers are already sanitized while parsing/reading the file
+	    return send_buf( HDR_SIZE );
+	  }
+	  c->st = ST_DONE;
 	  return none();
 
 	case CHKSUM_ERROR:

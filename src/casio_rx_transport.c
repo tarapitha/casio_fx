@@ -42,12 +42,12 @@ static void show_help( char * );
 *******************************************/
 int main( int argc, char **argv )
 {
-  Casio_FX casio = { .data_end = casio.buf + BUF_N };
+  Casio_FX casio = { .buf_end = casio.buf + BUF_N };
 
   // Parse command line options
   casio.dst_file_exists = false;
   casio.unchecked	= false;
-  casio.overwrite	= NAK;
+  casio.force_overwrite	= false;
   casio.parity  	= NONE;	// No parity by default
   casio.bps		= B9600; // Default data rate 9600 bps
 
@@ -124,7 +124,7 @@ int main( int argc, char **argv )
 	   casio.unchecked = true;
 	   break;
 	 case 'f':
-	   casio.overwrite = ACK;
+	   casio.force_overwrite = true;
 	   break;
 	 case 'V':
 	   fprintf( stderr, "%s version: %s\n", argv[ 0 ], CASIO_FX_VERSION );
@@ -204,8 +204,13 @@ int main( int argc, char **argv )
     }
   }
 
-  if( write_outfile( fname, &casio ) < 0 )
-    exit( -1 );
+  if( ! casio.dst_file_exists || casio.do_overwrite || casio.force_overwrite )
+  {
+    if( write_outfile( fname, &casio ) < 0 )
+      exit( -1 );
+  }
+  else
+    fputs( "*** User chose not to overwrite the destination file ***\n", stderr );
 
   return 0;
 }

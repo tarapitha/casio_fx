@@ -38,8 +38,10 @@ enum signals
   X(BU)	/* Backup			 */ \
   X(DD)	/* Screendump			 */ \
   X(DM)	/* Defined variables memory 	 */ \
+  X(EN) /* One File			 */ \
   X(F1)	/* One function memory		 */ \
   X(F6)	/* All function memories	 */ \
+  X(FN) /* All Files			 */ \
   X(G1)	/* One graph function		 */ \
   X(GA)	/* All graph functions		 */ \
   X(GF)	/* Graphic zoom factor		 */ \
@@ -149,9 +151,10 @@ typedef struct
 {
   State		st;
   uint8_t	buf[ BUF_N ];
-  uint8_t	* const data_end;
+  uint8_t *	const buf_end;
 
-  uint8_t	*data;	// Section pointer
+  uint8_t *	data;		// Section pointer
+  uint8_t *	data_end;	// End of the parsed data in buffer
   uint16_t	size;
   uint8_t	data_sum;
   size_t	data_i;
@@ -170,8 +173,10 @@ typedef struct
   uint16_t	variables_n;
   uint16_t	variables_i;
   uint8_t	polynomial_degree;
+  uint8_t	file_name[ 13 ];
 
   bool		all_data;
+  bool		all_files;
 
   time_t	last_rx_s;
   time_t	limit_s;

@@ -17,7 +17,7 @@
 #define CHECK_BOUNDARY( c, s ) /* c - state structure, s - section size */ \
   do \
   {  \
-    if( (c)->data + (s) >= (c)->data_end ) \
+    if( (c)->data + (s) >= (c)->buf_end ) \
       (c)->save_stream = false; \
   } while( 0 )
 // ----------------------------------------------------------------------
@@ -48,13 +48,14 @@ Action casio_fx_on_byte( Casio_FX *c, uint8_t b )
       switch( b )
       {
 	case SYN:
-	  c->st		 = ST_WAIT_HDR;
-	  c->limit_s	 = SHORTWAIT;
-	  c->data	 = c->buf;
-	  c->data_i	 = 0;
+	  c->st		  = ST_WAIT_HDR;
+	  c->limit_s	  = SHORTWAIT;
+	  c->data	  = c->buf;
+	  c->data_i	  = 0;
 	  c->do_overwrite = false;
-	  c->all_data    = false;
-	  c->save_stream = true;
+	  c->all_data     = false;
+	  c->all_files    = false;
+	  c->save_stream  = true;
 	  return send1( DC3 );
 	default:
 	  c->st = ST_DONE;
@@ -113,13 +114,13 @@ Action casio_fx_on_byte( Casio_FX *c, uint8_t b )
 
       // If the file with the same name already exists,
       // let calculator ask user wheter to replace it
-      if( c->dst_file_exists && ! c->do_overwrite && ( ! c->all_data || c->magic == AL ) )
+      if( c->dst_file_exists && ! c->force_overwrite && ! c->do_overwrite && ( ! c->all_data || c->magic == AL ) )
       {
 	switch( c->magic )
 	{
 	  // These do not play nicely with overwrite dialog
 	  // *** Have to implement this functionality on PC side ***
-	  // Until then we just tell calculator that the memory is full ;^)
+	  // Until then we just tell calculator that the memory is full
 	  case AL:	// All data - has no clue of AREA_USED or MEM_FULL
 	  case BU:	// Memdump  - has no clue of AREA_USED or MEM_FULL
 
@@ -747,6 +748,94 @@ Action casio_fx_on_byte( Casio_FX *c, uint8_t b )
       c->data += c->data_i;
       return send1( ACK );
 
+    case ST_WAIT_FLE_DATA:
+      CHECK_BOUNDARY( c, c->size );
+      switch( b )
+      {
+	case INIT_SEND: // ':'
+	  c->st = ST_READ_FLE_DATA;
+	  c->data_i = 0;
+	  if( c->save_stream )
+	    c->data[ c->data_i ] = b;
+	  c->data_i++;
+	  c->data_sum = 0;
+	  return none();
+	default:
+	  c->st = ST_DONE;
+	  return send1_print_msg_exit( GENERIC_ERROR,
+			"\n** ERROR: Got erroneous response from the calculator!\n"
+			"Checking the communication port parity setting might help.\n" );
+      }
+
+    case ST_READ_FLE_DATA:
+      c->data_sum += b;
+      if( c->save_stream )
+	c->data[ c->data_i ] = b;
+      if( ++c->data_i < c->size )
+	return none();
+
+      if( ! c->save_stream )
+      {
+	c->st = ST_DONE;
+	return send1_print_msg_exit( GENERIC_ERROR, "\n** ERROR: casio_rx internal buffer overflow!\n" );
+      }
+
+      if( ! c->unchecked && c->data_sum != 0 )
+      {
+	c->st = ST_DONE;
+	return send1_print_msg_exit( CHKSUM_ERROR,
+			"\n** ERROR: Incorrect program checksum!\n"
+			"Checking the communication port parity setting might help.\n" );
+      }
+
+      c->st = ST_DONE;
+      c->data += c->data_i;
+      return send1( ACK );
+
+    case ST_WAIT_ALLFLE_DATA:
+      CHECK_BOUNDARY( c, c->size );
+      switch( b )
+      {
+	case INIT_SEND: // ':'
+	  c->st = ST_READ_ALLFLE_DATA;
+	  c->data_i = 0;
+	  if( c->save_stream )
+	    c->data[ c->data_i ] = b;
+	  c->data_i++;
+	  c->data_sum = 0;
+	  return none();
+	default:
+	  c->st = ST_DONE;
+	  return send1_print_msg_exit( GENERIC_ERROR,
+			"\n** ERROR: Got erroneous response from the calculator!\n"
+			"Checking the communication port parity setting might help.\n" );
+      }
+
+    case ST_READ_ALLFLE_DATA:
+      c->data_sum += b;
+      if( c->save_stream )
+	c->data[ c->data_i ] = b;
+      if( ++c->data_i < c->size )
+	return none();
+
+      if( ! c->save_stream )
+      {
+	c->st = ST_DONE;
+	return send1_print_msg_exit( GENERIC_ERROR, "\n** ERROR: casio_rx internal buffer overflow!\n" );
+      }
+
+      if( ! c->unchecked && c->data_sum != 0 )
+      {
+	c->st = ST_DONE;
+	return send1_print_msg_exit( CHKSUM_ERROR,
+			"\n** ERROR: Incorrect program checksum!\n"
+			"Checking the communication port parity setting might help.\n" );
+      }
+
+      c->st = ST_WAIT_HDR;
+      c->data += c->data_i;
+      return send1( ACK );
+
     case ST_WAIT_REGRESSION_DATA:
       CHECK_BOUNDARY( c, c->size );
       switch( b )
@@ -969,6 +1058,14 @@ static Action magic_decision( Casio_FX *c )
       c->st = ST_WAIT_ALLPRG_DIRECTORY;
       break;
 
+    case EN:	// One file
+      c->st = ST_WAIT_FLE_DATA;
+      break;
+
+    case FN:	// All files
+      c->st = ST_WAIT_ALLFLE_DATA;
+      break;
+
     case SR:	// Regression analysis
       c->st = ST_WAIT_REGRESSION_DATA;
       c->regression_i = 0;
@@ -1110,6 +1207,29 @@ static int parse_header( Casio_FX *c )
       size_lsb = c->data[ 4+1 ];
       c->size = (uint16_t)( ( size_msb << 8 ) | size_lsb );
       c->mode = c->data[ 5+1 ];
+      break;
+
+    case EN:	// Editor file
+      size_msb = c->data[ 3+1 ];
+      size_lsb = c->data[ 4+1 ];
+      c->size = (uint16_t)( ( size_msb << 8 ) | size_lsb );
+      c->mode = c->data[ 5+1 ];
+      strncpy( (char *)(c->file_name ), (char *)( c->data + 6+1 ), 12 );
+      for( int i = 0; i < 13; i++ )
+        if( c->file_name[ i ] == 0xFF )
+          c->file_name[ i ] = 0x00;
+      break;
+
+    case FN:	// All files
+      size_msb = c->data[ 3+1 ];
+      size_lsb = c->data[ 4+1 ];
+      c->size = (uint16_t)( ( size_msb << 8 ) | size_lsb );
+      c->mode = c->data[ 5+1 ];
+      strncpy( (char *)(c->file_name ), (char *)( c->data + 6+1 ), 12 );
+      for( int i = 0; i < 13; i++ )
+        if( c->file_name[ i ] == 0xFF )
+          c->file_name[ i ] = 0x00;
+      c->all_files = true;
       break;
 
     case SR:
