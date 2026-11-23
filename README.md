@@ -38,11 +38,9 @@ Hardware used for testing:
 
 ## SUPPORTED DEVICES
 
-**fx-7700GB**, **fx-7700GE** are fully supported
+**fx-7700GB**, **fx-7700GE**, **fx-8700GB**, **fx-8800GB** are fully supported
 
-**fx-8700GB** supported communication of only primary memory programs
-
-**CFX-9850G** supported is only receiving the monochrome screendumps from the calculator
+**CFX-9850G** Only receiving screenshots from the calculator is supported, and only in monochrome
 
 
 ## COMPILING
