@@ -85,7 +85,7 @@ The first section is always the 40 byte header.
 |   7      | Draw Statistics Graph |
 
   Header is followed by the 192-byte programs directory section that contains 38 5-byte fields,
-  one field for each program, from A-Z, r and theta.
+  one field for each program, for P0-P9, PA-PZ, Pr and P$\theta$ .
 
 | offset | value                   |
 |--------|-------------------------|
@@ -440,9 +440,9 @@ The first section is always the 40 byte header.
 | 27..34 | Ymin          |
 | 35..42 | Ymax          |
 | 43..50 | Yscale        |
-| 51..58 | T/Theta min   |
-| 59..66 | T/Theta max   |
-| 67..74 | T/Theta pitch |
+| 51..58 | T/$\theta$ min   |
+| 59..66 | T/$\theta$ max   |
+| 67..74 | T/$\theta$ pitch |
 
 ---
 
