@@ -85,7 +85,7 @@ The first section is always the 40 byte header.
 |   7      | Draw Statistics Graph |
 
   Header is followed by the 192-byte programs directory section that contains 38 5-byte fields,
-  one field for each program, for P0-P9, PA-PZ, Pr and P$\theta$ .
+  one field for each program, for P0-P9, PA-PZ, Pr and Pθ.
 
 | offset | value                   |
 |--------|-------------------------|
@@ -430,19 +430,19 @@ The first section is always the 40 byte header.
 
   Header is followed by VAL_COUNT*8+4 byte section:
 
-| offset | value         |
-|--------|---------------|
-|  1     | 0x00          |
-|  2     | 0x00          |
-|  3..10 | Xmin          |
-| 11..18 | Xmax          |
-| 19..26 | Xscale        |
-| 27..34 | Ymin          |
-| 35..42 | Ymax          |
-| 43..50 | Yscale        |
-| 51..58 | T/$\theta$ min   |
-| 59..66 | T/$\theta$ max   |
-| 67..74 | T/$\theta$ pitch |
+| offset | value     |
+|--------|-----------|
+|  1     | 0x00      |
+|  2     | 0x00      |
+|  3..10 | Xmin      |
+| 11..18 | Xmax      |
+| 19..26 | Xscale    |
+| 27..34 | Ymin      |
+| 35..42 | Ymax      |
+| 43..50 | Yscale    |
+| 51..58 | T/θ min   |
+| 59..66 | T/θ max   |
+| 67..74 | T/θ pitch |
 
 ---
 
